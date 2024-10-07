@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <title>Интерактивный граф на D3.js</title>
+  <meta charset="UTF-8">
+  <title>Граф с редактором</title>
   <style>
-    /* Стили для тела документа */
+    /* Добавьте здесь ваши стили */
+
     body {
       margin: 0;
-      padding: 0;
-      overflow: hidden; /* Чтобы избежать появления скроллбаров */
+      overflow: hidden;
+      font-family: Arial, sans-serif;
     }
 
-    /* Контейнер для графа */
-    #graphContainer {
+    svg {
       position: absolute;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      overflow: hidden;
     }
 
-    /* Ваши предыдущие стили для графа */
-    .node circle {
-      fill: #69b3a2;
-      stroke: none;
-    }
-
-    .node text {
-      font-size: 12px;
-      font-family: Arial, sans-serif;
+    .tooltip {
+      position: absolute;
+      text-align: left;
+      padding: 10px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      pointer-events: none;
     }
 
     .link {
@@ -37,179 +34,116 @@
       stroke-opacity: 0.6;
     }
 
-    .highlighted {
-      stroke: #ff0000;
+    .link.highlighted {
+      stroke: #f00;
       stroke-width: 2px;
     }
 
-    .link.highlighted {
-      stroke: blue;
-      stroke-opacity: 1;
+    .node circle {
+      stroke: #fff;
+      stroke-width: 1.5px;
     }
 
-    /* Стили для тултипа */
-    .tooltip {
-      position: absolute;
-      text-align: center;
-      width: auto;
-      padding: 5px;
-      font: 12px Arial, sans-serif;
-      background: lightgray;
-      border: 1px solid #000;
-      border-radius: 5px;
+    .node circle.highlighted {
+      stroke: #f00;
+      stroke-width: 3px;
+    }
+
+    .node text {
       pointer-events: none;
-      opacity: 0;
+      font-size: 12px;
     }
 
-    /* Кнопка Edit */
-    #editButton {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 1000;
-      padding: 0;
-    }
-
-    #editButton img {
-      width: 24px;
-      height: 24px;
-    }
-
-    /* Модальное окно для пароля */
-    #passwordModal {
-      display: none; /* Скрыто по умолчанию */
-      position: fixed;
-      z-index: 1001;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-
-    #passwordModalContent {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 300px;
-      text-align: center;
-    }
-
-    /* Боковая панель редактирования */
     #sidebar {
-      display: none; /* Скрыто по умолчанию */
-      position: fixed;
+      position: absolute;
       top: 0;
       right: 0;
       width: 300px;
       height: 100%;
-      background-color: #f5f5f5;
+      background: #f9f9f9;
       border-left: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
       overflow-y: auto;
-      padding: 20px;
-      z-index: 1000;
     }
 
-    #sidebar h2 {
-      margin-top: 0;
+    #nodeList {
+      margin-top: 20px;
     }
 
     .node-item {
-      cursor: pointer;
       padding: 5px;
+      cursor: pointer;
       border-bottom: 1px solid #ddd;
     }
 
     .node-item:hover {
-      background-color: #eaeaea;
+      background-color: #eee;
     }
 
     .input-group {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
 
     .input-group label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
 
     .input-group input,
-    .input-group textarea,
-    .input-group select {
+    .input-group textarea {
       width: 100%;
       padding: 5px;
       box-sizing: border-box;
     }
 
-    /* Кнопка добавления узла */
+    .add-link-button {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .link-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .link-item button {
+      margin-left: 10px;
+    }
+
     #addNodeButton {
-      margin-top: 10px;
-      padding: 10px;
+      display: block;
       width: 100%;
-      background-color: #69b3a2;
-      color: #fff;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #4CAF50;
+      color: white;
       border: none;
       cursor: pointer;
     }
 
     #addNodeButton:hover {
-      background-color: #5a9a8a;
-    }
-
-    /* Кнопка добавления связи */
-    .add-link-button {
-      margin-top: 5px;
-      padding: 5px;
-      background-color: #69b3a2;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    .add-link-button:hover {
-      background-color: #5a9a8a;
+      background-color: #45a049;
     }
   </style>
 </head>
 <body>
-  <!-- Кнопка Edit с изображением PNG -->
-  <button id="editButton">
-    <img src="edit-icon.png" alt="Edit">
-  </button>
-
-  <!-- Модальное окно для пароля -->
-  <div id="passwordModal">
-    <div id="passwordModalContent">
-      <h2>Введите пароль</h2>
-      <input type="password" id="passwordInput" placeholder="Пароль">
-      <br><br>
-      <button id="passwordSubmit">Войти</button>
-    </div>
-  </div>
-
-  <!-- Боковая панель редактирования -->
-  <div id="sidebar">
-    <h2>Редактирование графа</h2>
-    <div id="nodeList">
-      <!-- Здесь будет список узлов -->
-    </div>
-    <button id="addNodeButton">+ Добавить узел</button>
-  </div>
-
   <!-- Контейнер для графа -->
-  <div id="graphContainer">
-    <svg></svg>
+  <svg></svg>
+
+  <!-- Боковая панель для редактирования -->
+  <div id="sidebar">
+    <h2>Редактор графа</h2>
+    <button id="addNodeButton">+ Добавить узел</button>
+    <div id="nodeList"></div>
   </div>
 
-  <!-- Подключение D3.js -->
-  <script src="https://d3js.org/d3.v6.min.js"></script>
-
-  <!-- Подключение вашего скрипта -->
+  <!-- Подключаем библиотеки D3.js и наш скрипт -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
