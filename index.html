@@ -4,7 +4,62 @@
   <meta charset="utf-8">
   <title>Интерактивный граф на D3.js</title>
   <style>
-    /* Ваши предыдущие стили */
+    /* Стили для тела документа */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Чтобы избежать появления скроллбаров */
+    }
+
+    /* Контейнер для графа */
+    #graphContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+
+    /* Ваши предыдущие стили для графа */
+    .node circle {
+      fill: #69b3a2;
+      stroke: none;
+    }
+
+    .node text {
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+    }
+
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+
+    .highlighted {
+      stroke: #ff0000;
+      stroke-width: 2px;
+    }
+
+    .link.highlighted {
+      stroke: blue;
+      stroke-opacity: 1;
+    }
+
+    /* Стили для тултипа */
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      width: auto;
+      padding: 5px;
+      font: 12px Arial, sans-serif;
+      background: lightgray;
+      border: 1px solid #000;
+      border-radius: 5px;
+      pointer-events: none;
+      opacity: 0;
+    }
 
     /* Кнопка Edit */
     #editButton {
@@ -18,10 +73,9 @@
       padding: 0;
     }
 
-    #editButton svg {
+    #editButton img {
       width: 24px;
       height: 24px;
-      fill: gray;
     }
 
     /* Модальное окно для пароля */
@@ -85,7 +139,8 @@
     }
 
     .input-group input,
-    .input-group textarea {
+    .input-group textarea,
+    .input-group select {
       width: 100%;
       padding: 5px;
       box-sizing: border-box;
@@ -122,11 +177,9 @@
   </style>
 </head>
 <body>
-  <!-- Кнопка Edit с серым карандашом -->
+  <!-- Кнопка Edit с изображением PNG -->
   <button id="editButton">
-    <svg viewBox="0 0 512 512" aria-hidden="true">
-      <path d="M290.74,93.24l128,128a16,16,0,0,1,0,22.63L192.63,470.37a16,16,0,0,1-11.31,4.69H48a16,16,0,0,1-16-16V331.31a16,16,0,0,1,4.69-11.31L290.74,93.24A16,16,0,0,1,313.37,93.24Zm190.57-53.77-60.1-60.1a32,32,0,0,0-45.25,0L345.66,19.37a16,16,0,0,0,0,22.63l128,128a16,16,0,0,0,22.63,0l29.19-29.19A32,32,0,0,0,481.31,39.47Z"/>
-    </svg>
+    <img src="edit-icon.png" alt="Edit">
   </button>
 
   <!-- Модальное окно для пароля -->
@@ -148,7 +201,10 @@
     <button id="addNodeButton">+ Добавить узел</button>
   </div>
 
-  <svg></svg>
+  <!-- Контейнер для графа -->
+  <div id="graphContainer">
+    <svg></svg>
+  </div>
 
   <!-- Подключение D3.js -->
   <script src="https://d3js.org/d3.v6.min.js"></script>
