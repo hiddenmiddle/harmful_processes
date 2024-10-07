@@ -205,34 +205,13 @@ function drag(simulation) {
 
 // Функции для интерфейса редактирования
 function initializeEditor() {
-  const editButton = document.getElementById('editButton');
-  const passwordModal = document.getElementById('passwordModal');
-  const passwordInput = document.getElementById('passwordInput');
-  const passwordSubmit = document.getElementById('passwordSubmit');
   const sidebar = document.getElementById('sidebar');
   const nodeList = document.getElementById('nodeList');
   const addNodeButton = document.getElementById('addNodeButton');
 
-  // Пароль
-  const correctPassword = 'harmharm1234';
-
-  // Обработчик нажатия на кнопку Edit
-  editButton.addEventListener('click', () => {
-    passwordModal.style.display = 'block';
-  });
-
-  // Обработчик нажатия на кнопку Войти
-  passwordSubmit.addEventListener('click', () => {
-    const enteredPassword = passwordInput.value;
-    if (enteredPassword === correctPassword) {
-      passwordModal.style.display = 'none';
-      passwordInput.value = '';
-      sidebar.style.display = 'block';
-      populateNodeList();
-    } else {
-      alert('Неверный пароль');
-    }
-  });
+  // Отображаем панель редактирования сразу
+  sidebar.style.display = 'block';
+  populateNodeList();
 
   // Функция для заполнения списка узлов
   function populateNodeList() {
