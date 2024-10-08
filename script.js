@@ -117,6 +117,7 @@ function updateGraph() {
     .selectAll("g")
     .data(graphData.nodes)
     .join("g")
+    .attr("class", "node")  // Добавляем класс 'node'
     .on("mouseover", mouseOver)
     .on("mouseout", mouseOut)
     .call(drag(simulation));
@@ -129,7 +130,8 @@ function updateGraph() {
   node.append("text")
     .attr("dx", d => 12 + (nodeDegrees[d.id] || 0) * 5)
     .attr("dy", 4)
-    .text(d => d.id);
+    .text(d => d.id)
+    .attr("class", "node-text");  // Присваиваем класс для текста
 
   // Обновляем симуляцию
   simulation.on("tick", () => {
