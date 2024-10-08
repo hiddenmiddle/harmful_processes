@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Граф с редактором</title>
   <style>
-    /* Добавьте здесь ваши стили */
+    /* Добавьте стили на основе ваших цветовых изменений */
 
     body {
       margin: 0;
@@ -42,20 +42,20 @@
     .node circle {
       stroke: #fff;
       stroke-width: 1.5px;
-      fill:#FDBFF3;
+      fill: #FDBFF3;
     }
 
     .node circle.highlighted {
       stroke: #6E82E5;
       stroke-width: 3px;
-      fill:#935AC8;
+      fill: #935AC8;
     }
 
     .node-text {
       pointer-events: none;
       font-size: 12px;
       font-weight: bold;
-      fill:#6E82E5;
+      fill: #6E82E5;
     }
 
     #sidebar {
@@ -69,6 +69,7 @@
       padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
+      display: block;  /* Панель видима по умолчанию */
     }
 
     #nodeList {
@@ -119,6 +120,10 @@
       margin-left: 10px;
     }
 
+    .hidden {
+      display: none;
+    }
+
     #addNodeButton {
       display: block;
       width: 100%;
@@ -134,8 +139,30 @@
       background-color: #45a049;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
+  <script>
+    // Конфигурация Firebase (замените на ваши данные)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCJ6HnMh_rgtOXE-ShcPRXNWBmmc61gndA",
+        authDomain: "harmfulprocesses.firebaseapp.com",
+        projectId: "harmfulprocesses",
+        storageBucket: "harmfulprocesses.appspot.com",
+        messagingSenderId: "532845269952",
+        appId: "1:532845269952:web:6d1b028e57a55268742e25",
+        measurementId: "G-FB2M6S25G7"
+    };
+
+    // Инициализация Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
+  </script>
 </head>
 <body>
+
   <!-- Контейнер для графа -->
   <svg></svg>
 
@@ -146,8 +173,7 @@
     <div id="nodeList"></div>
   </div>
 
-  <!-- Подключаем библиотеки D3.js и наш скрипт -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="script.js"></script>
+
 </body>
 </html>
