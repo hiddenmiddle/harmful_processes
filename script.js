@@ -26,19 +26,6 @@ function loadDataFromFirebase(callback) {
     });
   }).catch(error => {
     console.error('Ошибка загрузки из Firebase:', error);
-    loadLocalData(callback);  // Если Firebase пуст или ошибка, загрузим данные из JSON
-  });
-}
-
-// Функция для загрузки данных из локального JSON
-function loadLocalData(callback) {
-  d3.json("graphData.json").then(data => {
-    graphData = data;
-    prepareData();
-    saveDataToFirebase();  // Сохраняем данные в Firebase после их загрузки
-    callback();
-  }).catch(error => {
-    console.error('Ошибка загрузки локальных данных:', error);
   });
 }
 
@@ -79,7 +66,11 @@ function saveDataToFirebase() {
 
 // Функция для обновления графа
 function updateGraph() {
-  svg.selectAll("*").remove();
+  const svg = d3.select("svg")
+    .attr("width", "100%")
+    .attr("height", "100%");
+
+  svg.selectAll("*").remove();  // Очищаем предыдущие элементы
 
   const width = svg.node().clientWidth;
   const height = svg.node().clientHeight;
@@ -130,8 +121,6 @@ function updateGraph() {
     .data(graphData.nodes)
     .join("g")
     .attr("class", "node")
-    .on("mouseover", mouseOver)
-    .on("mouseout", mouseOut)
     .call(drag(simulation));
 
   node.append("circle")
@@ -155,244 +144,38 @@ function updateGraph() {
   });
 }
 
-// Функции для событий мыши
-function mouseOver(event, d) {
-  d3.select(this).select("circle").classed("highlighted", true);
-  svg.selectAll(".link")
-    .filter(l => l.source.id === d.id || l.target.id === d.id)
-    .classed("highlighted", true);
-
-  tooltip.transition()
-    .duration(200)
-    .style("opacity", .9);
-  tooltip.html(d.tooltip || '')
-    .style("left", (event.pageX + 10) + "px")
-    .style("top", (event.pageY - 28) + "px");
-}
-
-function mouseOut(event, d) {
-  d3.select(this).select("circle").classed("highlighted", false);
-  svg.selectAll(".link")
-    .filter(l => l.source.id === d.id || l.target.id === d.id)
-    .classed("highlighted", false);
-
-  tooltip.transition()
-    .duration(500)
-    .style("opacity", 0);
-}
-
-// Функции для интерфейса редактирования и сохранения в Firebase
-function initializeEditor() {
-  const sidebar = document.getElementById('sidebar');
-  const nodeList = document.getElementById('nodeList');
-  const addNodeButton = document.getElementById('addNodeButton');
-
-  sidebar.style.display = 'block';
-  populateNodeList();
-
-  function populateNodeList() {
-    nodeList.innerHTML = '';
-    graphData.nodes.forEach(node => {
-      const nodeItem = document.createElement('div');
-      nodeItem.className = 'node-item';
-      nodeItem.textContent = node.id;
-      nodeItem.addEventListener('click', () => {
-        openNodeEditor(node);
-      });
-      nodeList.appendChild(nodeItem);
-    });
-  }
-
-  addNodeButton.addEventListener('click', () => {
-    openNodeEditor(null);
-  });
-
-  function openNodeEditor(node) {
-    nodeList.innerHTML = '';
-
-    const backButton = document.createElement('button');
-    backButton.textContent = '← Назад';
-    backButton.addEventListener('click', () => {
-      populateNodeList();
-    });
-    nodeList.appendChild(backButton);
-
-    const editor = document.createElement('div');
-    editor.id = 'nodeEditor';
-
-    const nameGroup = document.createElement('div');
-    nameGroup.className = 'input-group';
-    const nameLabel = document.createElement('label');
-    nameLabel.textContent = 'Название узла:';
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameGroup.appendChild(nameLabel);
-    nameGroup.appendChild(nameInput);
-
-    const tooltipGroup = document.createElement('div');
-    tooltipGroup.className = 'input-group';
-    const tooltipLabel = document.createElement('label');
-    tooltipLabel.textContent = 'Описание (тултип):';
-    const tooltipInput = document.createElement('textarea');
-    tooltipGroup.appendChild(tooltipLabel);
-    tooltipGroup.appendChild(tooltipInput);
-
-    const linksGroup = document.createElement('div');
-    linksGroup.className = 'input-group';
-    const linksLabel = document.createElement('label');
-    linksLabel.textContent = 'Связи с узлами:';
-    const linksList = document.createElement('div');
-    linksGroup.appendChild(linksLabel);
-    linksGroup.appendChild(linksList);
-
-    const addLinkButton = document.createElement('button');
-    addLinkButton.className = 'add-link-button';
-    addLinkButton.textContent = '+ Добавить связь';
-
-    editor.appendChild(nameGroup);
-    editor.appendChild(tooltipGroup);
-    editor.appendChild(linksGroup);
-    editor.appendChild(addLinkButton);
-
-    nodeList.appendChild(editor);
-
-    let isNewNode = false;
-
-    if (node) {
-      nameInput.value = node.id;
-      tooltipInput.value = node.tooltip || '';
-      displayNodeLinks(node);
-    } else {
-      node = { id: '', tooltip: '' };
-      isNewNode = true;
-    }
-
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        updateNodeId();
-        tooltipInput.focus();
-        e.preventDefault();
-      }
-    });
-
-    nameInput.addEventListener('blur', () => {
-      updateNodeId();
-    });
-
-    function updateNodeId() {
-      const oldId = node.id;
-      const newId = nameInput.value.trim();
-
-      if (!newId) {
-        alert('Название узла не может быть пустым.');
-        nameInput.value = oldId;
-        return;
-      }
-
-      if (oldId !== newId) {
-        const existingNode = graphData.nodes.find(n => n.id === newId);
-        if (existingNode && existingNode !== node) {
-          alert('Узел с таким названием уже существует.');
-          nameInput.value = oldId;
-          return;
-        }
-
-        node.id = newId;
-
-        if (isNewNode) {
-          graphData.nodes.push(node);
-          isNewNode = false;
-        } else {
-          graphData.links.forEach(l => {
-            if (l.source === oldId) l.source = newId;
-            if (l.target === oldId) l.target = newId;
-          });
-        }
-
-        saveDataToFirebase();  // Сохраняем данные в Firebase
-        populateNodeList();
-      }
-    }
-
-    tooltipInput.addEventListener('input', () => {
-      node.tooltip = tooltipInput.value;
-      saveDataToFirebase();  // Сохраняем данные в Firebase
-    });
-
-    addLinkButton.addEventListener('click', () => {
-      const availableNodes = graphData.nodes.filter(n => n.id !== node.id && !graphData.links.some(l => (l.source === node.id && l.target === n.id) || (l.source === n.id && l.target === node.id)));
-
-      if (availableNodes.length === 0) {
-        alert('Нет доступных узлов для добавления связи.');
-        return;
-      }
-
-      const select = document.createElement('select');
-      availableNodes.forEach(n => {
-        const option = document.createElement('option');
-        option.value = n.id;
-        option.textContent = n.id;
-        select.appendChild(option);
-      });
-
-      const confirmButton = document.createElement('button');
-      confirmButton.textContent = 'Добавить';
-      confirmButton.addEventListener('click', () => {
-        const selectedNodeId = select.value;
-        graphData.links.push({
-          source: node.id,
-          target: selectedNodeId
-        });
-        saveDataToFirebase();  // Сохраняем данные в Firebase
-        updateGraph();
-        displayNodeLinks(node);
-
-        editor.removeChild(select);
-        editor.removeChild(confirmButton);
-      });
-
-      editor.appendChild(select);
-      editor.appendChild(confirmButton);
-    });
-
-    function displayNodeLinks(node) {
-      linksList.innerHTML = '';
-      const connectedLinks = graphData.links.filter(l => {
-        return l.source === node.id || l.target === node.id;
-      });
-      const connectedNodes = connectedLinks.map(l => l.source === node.id ? l.target : l.source);
-
-      if (connectedNodes.length > 0) {
-        connectedNodes.forEach(n => {
-          const linkItemContainer = document.createElement('div');
-          linkItemContainer.className = 'link-item';
-
-          const linkItem = document.createElement('span');
-          linkItem.textContent = n;
-
-          const removeLinkButton = document.createElement('button');
-          removeLinkButton.textContent = 'Удалить связь';
-          removeLinkButton.addEventListener('click', () => {
-            graphData.links = graphData.links.filter(l => !(l.source === node.id && l.target === n) && !(l.source === n && l.target === node.id));
-            saveDataToFirebase();  // Сохраняем данные в Firebase
-            updateGraph();
-            displayNodeLinks(node);
-          });
-
-          linkItemContainer.appendChild(linkItem);
-          linkItemContainer.appendChild(removeLinkButton);
-          linksList.appendChild(linkItemContainer);
-        });
-      } else {
-        const noLinksMessage = document.createElement('div');
-        noLinksMessage.textContent = 'Нет связей.';
-        linksList.appendChild(noLinksMessage);
-      }
-    }
+// Функция для добавления нового узла
+function addNode(newNode) {
+  if (!graphData.nodes.find(node => node.id === newNode.id)) {
+    graphData.nodes.push(newNode);
+    saveDataToFirebase();  // Сохраняем данные в Firebase
+    updateGraph();  // Обновляем граф
+  } else {
+    alert('Узел с таким именем уже существует!');
   }
 }
 
-// Запускаем загрузку данных и инициализацию
+// Функция для добавления новой связи
+function addLink(sourceId, targetId) {
+  if (!graphData.links.find(link => link.source === sourceId && link.target === targetId)) {
+    graphData.links.push({ source: sourceId, target: targetId });
+    saveDataToFirebase();  // Сохраняем данные в Firebase
+    updateGraph();  // Обновляем граф
+  } else {
+    alert('Такая связь уже существует!');
+  }
+}
+
+// Обработчик добавления нового узла из интерфейса
+document.getElementById('addNodeButton').addEventListener('click', () => {
+  const newNodeId = prompt('Введите имя нового узла:');
+  if (newNodeId) {
+    const newNode = { id: newNodeId, tooltip: `Описание для ${newNodeId}` };
+    addNode(newNode);
+  }
+});
+
+// Загрузка данных из Firebase и инициализация графа и редактора
 loadDataFromFirebase(() => {
   updateGraph();
   initializeEditor();
