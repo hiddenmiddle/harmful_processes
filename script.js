@@ -72,6 +72,20 @@ const nodeLinkListDiv = document.getElementById('nodeLinkList');
 const nodeLinkTargetSelect = document.getElementById('nodeLinkTarget');
 const addNodeLinkButton = document.getElementById('addNodeLinkButton');
 
+// Создание контейнера для списка узлов
+const nodesContainer = document.createElement('div');
+nodesContainer.id = 'nodesContainer';
+listView.appendChild(nodesContainer);
+
+// Кнопка добавления узла (создается один раз)
+const addButton = document.createElement('button');
+addButton.id = 'addNodeButton';
+addButton.textContent = '+ Добавить узел';
+addButton.style.marginTop = '10px';
+addButton.style.width = '100%';
+addButton.onclick = addNode;
+listView.appendChild(addButton);
+
 // Данные графа
 let nodes = [];
 let links = [];
@@ -311,25 +325,38 @@ function loadData() {
 
 // Функция для обновления списка узлов в интерфейсе (list view)
 function updateNodeList() {
-  listView.innerHTML = '';
+  nodesContainer.innerHTML = '';
 
   nodes.forEach(node => {
     const nodeItem = document.createElement('div');
     nodeItem.className = 'node-item';
-    nodeItem.textContent = node.id;
-    nodeItem.style.cursor = 'pointer';
-    nodeItem.onclick = () => openNodeDetail(node.id);
-    listView.appendChild(nodeItem);
-  });
+    nodeItem.style.display = 'flex';
+    nodeItem.style.justifyContent = 'space-between';
+    nodeItem.style.alignItems = 'center';
+    nodeItem.style.padding = '5px';
+    nodeItem.style.borderBottom = '1px solid #FDBFF3';
 
-  // Кнопка добавления узла
-  const addButton = document.createElement('button');
-  addButton.id = 'addNodeButton';
-  addButton.textContent = '+ Добавить узел';
-  addButton.style.marginTop = '10px';
-  addButton.style.width = '100%';
-  addButton.onclick = addNode;
-  listView.appendChild(addButton);
+    const nodeName = document.createElement('span');
+    nodeName.textContent = node.id;
+    nodeName.style.cursor = 'pointer';
+    nodeName.onclick = () => openNodeDetail(node.id);
+    nodeItem.appendChild(nodeName);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Удалить';
+    deleteBtn.style.backgroundColor = '#f44336';
+    deleteBtn.style.color = 'white';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.padding = '3px 6px';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.onclick = (event) => {
+      event.stopPropagation();
+      deleteNode(node);
+    };
+    nodeItem.appendChild(deleteBtn);
+
+    nodesContainer.appendChild(nodeItem);
+  });
 }
 
 // Функция открытия детальной информации узла
@@ -375,7 +402,8 @@ function renderNodeDetail(nodeId) {
 
 // Функция рендеринга связей узла
 function renderNodeLinks(nodeId) {
-  nodeLinkListDiv.innerHTML = '<h4>Связи</h4>';
+  nodeLinksContainer.innerHTML = '<h4>Связи</h4>';
+  nodeLinkListDiv.innerHTML = '';
 
   const nodeLinks = links.filter(link => link.source === nodeId || link.target === nodeId);
 
