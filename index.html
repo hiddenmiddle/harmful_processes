@@ -2,10 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Граф с редактором</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Граф с Firebase</title>
   <style>
-    /* Добавьте стили на основе ваших цветовых изменений */
-
+    /* Ваши стили для графа */
     body {
       margin: 0;
       overflow: hidden;
@@ -16,6 +16,8 @@
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .tooltip {
@@ -27,6 +29,8 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .link {
@@ -43,6 +47,7 @@
       stroke: #fff;
       stroke-width: 1.5px;
       fill: #FDBFF3;
+      transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
     }
 
     .node circle.highlighted {
@@ -69,7 +74,7 @@
       padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
-      display: block;  /* Панель видима по умолчанию */
+      display: block;
     }
 
     #nodeList {
@@ -80,10 +85,14 @@
       padding: 5px;
       cursor: pointer;
       border-bottom: 1px solid #FDBFF3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .node-item:hover {
       background-color: #935AC8;
+      color: #fff;
     }
 
     .input-group {
@@ -118,6 +127,11 @@
 
     .link-item button {
       margin-left: 10px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
     }
 
     .hidden {
@@ -138,42 +152,32 @@
     #addNodeButton:hover {
       background-color: #45a049;
     }
+
+    .edit-input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 5px;
+      padding: 5px;
+    }
   </style>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+  <!-- Подключение библиотеки D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 
-  <script>
-    // Конфигурация Firebase (замените на ваши данные)
-    const firebaseConfig = {
-        apiKey: "AIzaSyCJ6HnMh_rgtOXE-ShcPRXNWBmmc61gndA",
-        authDomain: "harmfulprocesses.firebaseapp.com",
-        projectId: "harmfulprocesses",
-        storageBucket: "harmfulprocesses.appspot.com",
-        messagingSenderId: "532845269952",
-        appId: "1:532845269952:web:6d1b028e57a55268742e25",
-        measurementId: "G-FB2M6S25G7"
-    };
-
-    // Инициализация Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database(app);
-  </script>
 </head>
 <body>
 
-  <!-- Контейнер для графа -->
+  <!-- SVG контейнер для графа -->
   <svg></svg>
 
   <!-- Боковая панель для редактирования -->
   <div id="sidebar">
-    <h2>Редактор графа</h2>
     <button id="addNodeButton">+ Добавить узел</button>
     <div id="nodeList"></div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Подключение скрипта с логикой графа -->
+  <script src="script.js" type="module"></script>
 
 </body>
 </html>
