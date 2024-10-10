@@ -147,7 +147,7 @@ function mouseOut(event, d) {
     .filter(l => l.source.id === d.id || l.target.id === d.id)
     .classed("highlighted", false);
 
-  // Скрыть тултип
+  // Скрыть тултипа
   tooltip.transition()
     .duration(500)
     .style("opacity", 0);
@@ -350,7 +350,7 @@ function updateNodeList() {
     deleteBtn.style.padding = '3px 6px';
     deleteBtn.style.cursor = 'pointer';
     deleteBtn.onclick = (event) => {
-      event.stopPropagation();
+      event.stopPropagation(); // Предотвращает всплытие события клика
       deleteNode(node);
     };
     nodeItem.appendChild(deleteBtn);
@@ -494,23 +494,25 @@ function saveNodeName(oldId, newName) {
           tooltip: nodeData.tooltip
         }).then(() => {
           // Обновление всех связей, где был старый id
-          onValue(ref(database, 'links'), snapshot => {
+          const linksRef = ref(database, 'links');
+          get(linksRef).then(snapshot => {
             const data = snapshot.val();
             if (data) {
               const updates = {};
               Object.keys(data).forEach(key => {
-                if (data[key].source === oldId) {
-                  updates[`links/${key}/source`] = newName;
-                }
-                if (data[key].target === oldId) {
-                  updates[`links/${key}/target`] = newName;
+                if (data[key].source === oldId || data[key].target === oldId) {
+                  const newSource = data[key].source === oldId ? newName : data[key].source;
+                  const newTarget = data[key].target === oldId ? newName : data[key].target;
+                  const newLinkKey = `${newSource}-${newTarget}`;
+                  updates[`links/${newLinkKey}`] = { source: newSource, target: newTarget };
+                  updates[`links/${key}`] = null;
                 }
               });
               if (Object.keys(updates).length > 0) {
                 update(ref(database), updates).catch(error => console.error("Ошибка при обновлении связей:", error));
               }
             }
-          });
+          }).catch(error => console.error("Ошибка при получении связей:", error));
         }).catch(error => console.error("Ошибка при добавлении нового узла:", error));
       }).catch(error => console.error("Ошибка при удалении старого узла:", error));
     }
