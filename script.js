@@ -147,7 +147,7 @@ function mouseOut(event, d) {
     .filter(l => l.source.id === d.id || l.target.id === d.id)
     .classed("highlighted", false);
 
-  // Скрыть тултипа
+  // Скрыть тултип
   tooltip.transition()
     .duration(500)
     .style("opacity", 0);
@@ -477,46 +477,65 @@ function saveNodeName(oldId, newName) {
     return;
   }
 
-  // Обновление имени узла в Firebase
-  // Поскольку id = name, нужно изменить ключ узла и обновить все связи
-  const oldNodeRef = ref(database, `nodes/${oldId}`);
-  const newNodeRef = ref(database, `nodes/${newName}`);
-
   // Получение данных узла
+  const oldNodeRef = ref(database, `nodes/${oldId}`);
   get(oldNodeRef).then(snapshot => {
     if (snapshot.exists()) {
       const nodeData = snapshot.val();
-      // Удаление старого узла
-      remove(oldNodeRef).then(() => {
-        // Добавление нового узла с новым именем
-        set(newNodeRef, {
-          id: newName,
-          tooltip: nodeData.tooltip
-        }).then(() => {
-          // Обновление всех связей, где был старый id
-          const linksRef = ref(database, 'links');
-          get(linksRef).then(snapshot => {
-            const data = snapshot.val();
-            if (data) {
-              const updates = {};
-              Object.keys(data).forEach(key => {
-                if (data[key].source === oldId || data[key].target === oldId) {
-                  const newSource = data[key].source === oldId ? newName : data[key].source;
-                  const newTarget = data[key].target === oldId ? newName : data[key].target;
-                  const newLinkKey = `${newSource}-${newTarget}`;
-                  updates[`links/${newLinkKey}`] = { source: newSource, target: newTarget };
-                  updates[`links/${key}`] = null;
-                }
-              });
-              if (Object.keys(updates).length > 0) {
-                update(ref(database), updates).catch(error => console.error("Ошибка при обновлении связей:", error));
-              }
+
+      // Получение всех связей
+      const linksRef = ref(database, 'links');
+      get(linksRef).then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          const updates = {};
+
+          Object.keys(data).forEach(key => {
+            if (data[key].source === oldId || data[key].target === oldId) {
+              const newSource = data[key].source === oldId ? newName : data[key].source;
+              const newTarget = data[key].target === oldId ? newName : data[key].target;
+              const newLinkKey = `${newSource}-${newTarget}`;
+              // Создание новой связи с новым ключом
+              updates[`links/${newLinkKey}`] = { source: newSource, target: newTarget };
+              // Удаление старой связи
+              updates[`links/${key}`] = null;
             }
-          }).catch(error => console.error("Ошибка при получении связей:", error));
-        }).catch(error => console.error("Ошибка при добавлении нового узла:", error));
-      }).catch(error => console.error("Ошибка при удалении старого узла:", error));
+          });
+
+          // Удаление старого узла и добавление нового узла с обновленным названием
+          updates[`nodes/${oldId}`] = null;
+          updates[`nodes/${newName}`] = {
+            id: newName,
+            tooltip: nodeData.tooltip
+          };
+
+          // Выполнение многопутевого обновления
+          update(ref(database), updates).then(() => {
+            console.log(`Узел "${oldId}" переименован в "${newName}" и связи обновлены.`);
+          }).catch(error => {
+            console.error("Ошибка при обновлении узла и связей:", error);
+          });
+        } else {
+          // Если связей нет, просто переименовываем узел
+          const updates = {};
+          updates[`nodes/${oldId}`] = null;
+          updates[`nodes/${newName}`] = {
+            id: newName,
+            tooltip: nodeData.tooltip
+          };
+          update(ref(database), updates).then(() => {
+            console.log(`Узел "${oldId}" переименован в "${newName}".`);
+          }).catch(error => {
+            console.error("Ошибка при переименовании узла:", error);
+          });
+        }
+      }).catch(error => {
+        console.error("Ошибка при получении связей:", error);
+      });
     }
-  }).catch(error => console.error("Ошибка при получении данных узла:", error));
+  }).catch(error => {
+    console.error("Ошибка при получении данных узла:", error);
+  });
 }
 
 // Функция для сохранения описания узла
