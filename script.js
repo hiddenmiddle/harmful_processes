@@ -107,7 +107,31 @@ const nodeGroup = svg.append("g")
 
 const labelGroup = svg.append("g")
   .attr("class", "labels");
+// Предотвращение появления контекстного меню при правом клике
+svg.on("contextmenu", (event) => event.preventDefault());
+// Определение поведения масштабирования и панорамирования
+const zoom = d3.zoom()
+    .scaleExtent([0.5, 5]) // Минимальный и максимальный масштаб
+    .on("zoom", zoomed) // Функция обработки события масштабирования
+    .filter(function(event) {
+        // Разрешаем масштабирование только с помощью прокрутки мыши
+        if (event.type === 'wheel') return true;
+        // Разрешаем панорамирование только при нажатии правой кнопки мыши и перетаскивании
+        if (event.type === 'mousedown' && event.button === 2) return true;
+        // Запрещаем остальные взаимодействия
+        return false;
+    });
 
+// Применение поведения масштабирования к SVG
+svg.call(zoom);
+
+// Функция обработки события масштабирования
+function zoomed(event) {
+    // Применяем трансформацию к группам узлов, связей и меток
+    nodeGroup.attr("transform", event.transform);
+    linkGroup.attr("transform", event.transform);
+    labelGroup.attr("transform", event.transform);
+}
 // Создание симуляции
 const simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(d => d.id).distance(150))
