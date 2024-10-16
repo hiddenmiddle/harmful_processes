@@ -1,6 +1,7 @@
 // script.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
 // Конфигурация Firebase
 const firebaseConfig = {
@@ -17,6 +18,8 @@ const firebaseConfig = {
 // Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+// Инициализация Firebase Authentication
+const auth = getAuth(app);
 
 // Ссылки на элементы DOM
 const sidebar = document.getElementById('sidebar');
@@ -132,6 +135,73 @@ function zoomed(event) {
     linkGroup.attr("transform", event.transform);
     labelGroup.attr("transform", event.transform);
 }
+
+// Получение элементов модального окна
+const loginModal = document.getElementById('loginModal');
+const closeModal = document.getElementById('closeModal');
+const loginButton = document.getElementById('loginButton');
+const loginError = document.getElementById('loginError');
+
+// Функция для открытия модального окна
+function openLoginModal() {
+  loginModal.style.display = "block";
+}
+
+// Функция для закрытия модального окна
+function closeLogin() {
+  loginModal.style.display = "none";
+  loginError.textContent = "";
+}
+
+// Обработчики событий для открытия и закрытия модального окна
+document.getElementById('editButton').addEventListener('click', openLoginModal);
+closeModal.addEventListener('click', closeLogin);
+window.addEventListener('click', (event) => {
+  if (event.target == loginModal) {
+    closeLogin();
+  }
+});
+
+// Обработчик события для кнопки входа
+loginButton.addEventListener('click', () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (!email || !password) {
+    loginError.textContent = "Пожалуйста, введите email и пароль.";
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Вход выполнен успешно
+      closeLogin();
+      loginError.textContent = "";
+    })
+    .catch((error) => {
+      // Ошибка при входе
+      loginError.textContent = "Неверный email или пароль.";
+      console.error("Ошибка входа:", error);
+    });
+});
+
+// Слушатель изменений состояния аутентификации
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Пользователь вошел в систему
+    // Показать интерфейс редактирования
+    listView.style.display = 'block';
+    detailView.style.display = 'none';
+
+    // Добавьте любые другие изменения UI при аутентификации
+  } else {
+    // Пользователь не аутентифицирован
+    // Скрыть интерфейс редактирования
+    listView.style.display = 'none';
+    detailView.style.display = 'none';
+  }
+});
+
 // Создание симуляции
 const simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(d => d.id).distance(150))
@@ -160,7 +230,27 @@ function mouseOver(event, d) {
   tooltip.html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
     .style("left", (event.pageX + 10) + "px")
     .style("top", (event.pageY - 28) + "px");
-}
+    // Находим все связанные узлы
+    const connectedNodes = new Set();
+    connectedNodes.add(d.id);
+    linkGroup.selectAll("line").each(l => {
+      if (l.source.id === d.id || l.target.id === d.id) {
+        connectedNodes.add(l.source.id);
+        connectedNodes.add(l.target.id);
+      }
+    });
+
+    // Затемняем все несвязанные узлы и связи
+    nodeGroup.selectAll("g")
+      .classed("dimmed", n => !connectedNodes.has(n.id));
+
+    linkGroup.selectAll("line")
+      .classed("dimmed", l => !(l.source.id === d.id || l.target.id === d.id));
+
+    labelGroup.selectAll("text")
+      .classed("dimmed", n => !connectedNodes.has(n.id));
+
+    }
 
 function mouseOut(event, d) {
   // Убираем подсветку узла
@@ -170,6 +260,10 @@ function mouseOut(event, d) {
   linkGroup.selectAll("line")
     .filter(l => l.source.id === d.id || l.target.id === d.id)
     .classed("highlighted", false);
+  // Убираем затемнение со всех узлов и связей
+  nodeGroup.selectAll("g").classed("dimmed", false);
+  linkGroup.selectAll("line").classed("dimmed", false);
+  labelGroup.selectAll("text").classed("dimmed", false);
 
   // Скрыть тултип
   tooltip.transition()
