@@ -329,9 +329,13 @@ function renderGraph() {
       .on("end", dragended))
     .on("mouseover", mouseOver)
     .on("mouseout", mouseOut)
+    nodeGroup.selectAll("g")
     .on("click", (event, d) => {
-      event.stopPropagation();
-      openNodeDetail(d.id);
+      event.stopPropagation(); // Остановить всплытие события
+      openNodeDetail(d.id); // Функция для отображения деталей узла
+
+      // Показать интерфейс
+      document.getElementById("sidebar").style.display = "block";
     });
 
   nodeEnter.append("circle")
@@ -733,6 +737,8 @@ svg.on("click", () => {
     .classed("highlighted", false);
 
   hideTooltip();
+  // Скрыть интерфейс (боковую панель)
+  document.getElementById("sidebar").style.display = "none";
 });
 
 // Функции для тултипа
