@@ -114,16 +114,14 @@ const labelGroup = svg.append("g")
 svg.on("contextmenu", (event) => event.preventDefault());
 // Определение поведения масштабирования и панорамирования
 const zoom = d3.zoom()
-    .scaleExtent([0.5, 5]) // Минимальный и максимальный масштаб
-    .on("zoom", zoomed) // Функция обработки события масштабирования
-    .filter(function(event) {
-        // Разрешаем масштабирование только с помощью прокрутки мыши
-        if (event.type === 'wheel') return true;
-        // Разрешаем панорамирование только при нажатии правой кнопки мыши и перетаскивании
-        if (event.type === 'mousedown' && event.button === 2) return true;
-        // Запрещаем остальные взаимодействия
-        return false;
-    });
+  .scaleExtent([0.5, 5]) // Минимальный и максимальный масштаб
+  .on("zoom", zoomed)
+  .filter(function(event) {
+    // Разрешаем масштабирование двумя пальцами и колесом мыши
+    return (event.type === 'wheel' || event.touches && event.touches.length === 2) ||
+           // Панорамирование одним пальцем, если касание вне узлов
+           (event.type === 'mousedown' || (event.type === 'touchstart' && event.touches.length === 1));
+  });
 
 // Применение поведения масштабирования к SVG
 svg.call(zoom);
