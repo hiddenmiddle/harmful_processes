@@ -202,8 +202,8 @@ onAuthStateChanged(auth, (user) => {
 
 // Создание симуляции
 const simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(d => d.id).distance(350))
-  .force("charge", d3.forceManyBody().strength(-400))
+  .force("link", d3.forceLink().id(d => d.id).distance(250))
+  .force("charge", d3.forceManyBody().strength(-700))
   .force("center", d3.forceCenter(width / 2, height / 2));
 
 // Создание тултипа
