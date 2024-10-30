@@ -205,6 +205,23 @@ const simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(d => d.id).distance(250))
   .force("charge", d3.forceManyBody().strength(-700))
   .force("center", d3.forceCenter(width / 2, height / 2));
+// Получаем элементы слайдеров
+const linkDistanceSlider = document.getElementById("linkDistanceSlider");
+const chargeStrengthSlider = document.getElementById("chargeStrengthSlider");
+
+// Обработчик изменения для link distance
+linkDistanceSlider.addEventListener("input", () => {
+  const linkDistance = +linkDistanceSlider.value;
+  simulation.force("link").distance(linkDistance);
+  simulation.alpha(1).restart(); // Перезапуск симуляции
+});
+
+// Обработчик изменения для charge strength
+chargeStrengthSlider.addEventListener("input", () => {
+  const chargeStrength = +chargeStrengthSlider.value;
+  simulation.force("charge").strength(chargeStrength);
+  simulation.alpha(1).restart(); // Перезапуск симуляции
+});
 
 // Создание тултипа
 const tooltip = d3.select("body").append("div")
