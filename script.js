@@ -1,7 +1,10 @@
 // script.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
+
+
 
 // Конфигурация Firebase
 const firebaseConfig = {
@@ -182,21 +185,46 @@ loginButton.addEventListener('click', () => {
       console.error("Ошибка входа:", error);
     });
 });
-
-// Слушатель изменений состояния аутентификации
+function logout() {
+  signOut(auth).then(() => {
+    console.log("Пользователь вышел из системы");
+    // Дополнительно можете скрыть интерфейс или обновить состояние
+  }).catch((error) => {
+    console.error("Ошибка при выходе:", error);
+  });
+}
+window.logout = logout;
+// Отслеживание статуса аутентификации пользователя
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Пользователь вошел в систему
-    // Показать интерфейс редактирования
-    listView.style.display = 'block';
-    detailView.style.display = 'none';
+    // Пользователь аутентифицирован
+    console.log("Пользователь аутентифицирован");
 
-    // Добавьте любые другие изменения UI при аутентификации
+    // Включаем обработчики для отображения интерфейса только для авторизованного пользователя
+    nodeGroup.selectAll("g")
+      .on("click", (event, d) => {
+        event.stopPropagation();
+        openNodeDetail(d.id);
+        document.getElementById("sidebar").style.display = "block";
+      });
+
+    svg.on("click", () => {
+      nodeGroup.selectAll("g")
+        .select("circle")
+        .classed("highlighted", false);
+      linkGroup.selectAll("line")
+        .classed("highlighted", false);
+      document.getElementById("sidebar").style.display = "none";
+    });
+
   } else {
     // Пользователь не аутентифицирован
-    // Скрыть интерфейс редактирования
-    listView.style.display = 'none';
-    detailView.style.display = 'none';
+    console.log("Пользователь не аутентифицирован");
+    openLoginModal();
+
+    // Отключаем обработчики для интерфейса, чтобы он не появлялся для неавторизованных пользователей
+    nodeGroup.selectAll("g").on("click", null);
+    svg.on("click", null);
   }
 });
 
@@ -439,6 +467,7 @@ function loadData() {
   // Слушатель изменений узлов
   onValue(nodesRef, snapshot => {
     const data = snapshot.val();
+    console.log("Загруженные узлы:", data); // Проверяем данные узлов
     nodes = data ? Object.values(data).map(node => ({
       id: node.id,
       tooltip: node.tooltip
@@ -451,6 +480,7 @@ function loadData() {
   // Слушатель изменений связей
   onValue(linksRef, snapshot => {
     const data = snapshot.val();
+    console.log("Загруженные связи:", data); // Проверяем данные связей
     links = data ? Object.values(data).map(link => ({
       source: link.source,
       target: link.target
