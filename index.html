@@ -152,6 +152,24 @@
     #addNodeButton:hover {
       background-color: #45a049;
     }
+#controls {
+  position: absolute;
+  top: 10px; /* Отступ от верхнего края */
+  right: 10px; /* Отступ от правого края */
+  background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный фон */
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1000; /* Поверх других элементов */
+}
+
+#controls label {
+  display: block;
+  margin-top: 5px;
+}
+
+#controls input[type="range"] {
+  width: 200px;
+}
 
     .edit-input {
       width: 100%;
@@ -208,7 +226,13 @@
       fill: #aaa; /* Серый для текста */
       opacity: 0.5;
     }
-
+#editButton {
+  position: absolute;
+  top: 10px; /* Отступ от верхнего края */
+  left: 800px; /* Отступ от левого края */
+  z-index: 1000;
+  /* Добавьте другие стили по необходимости */
+}
 
   </style>
 
@@ -243,17 +267,17 @@
   </button>
   <!-- Боковая панель для редактирования -->
   <div id="sidebar">
-    <div class="slider-container">
-    <label for="linkDistanceSlider">Link Distance:</label>
-    <input type="range" id="linkDistanceSlider" min="50" max="500" value="250">
-  </div>
-  <div class="slider-container">
-    <label for="chargeStrengthSlider">Charge Strength:</label>
-    <input type="range" id="chargeStrengthSlider" min="-1000" max="0" value="-500">
-  </div>
+
 
     <div id="nodeList"></div>
   </div>
+<div id="controls">
+  <label for="linkDistanceSlider">Длина связей:</label>
+  <input type="range" id="linkDistanceSlider" min="50" max="500" value="250">
+
+  <label for="chargeStrengthSlider">Сила отталкивания:</label>
+  <input type="range" id="chargeStrengthSlider" min="-1500" max="0" value="-700">
+</div>
 
   <!-- Подключение скрипта с логикой графа -->
   <script src="script.js" type="module"></script>
