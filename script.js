@@ -219,12 +219,15 @@ onAuthStateChanged(auth, (user) => {
 
   } else {
     // Пользователь не аутентифицирован
-    console.log("Пользователь не аутентифицирован");
-    openLoginModal();
+//    console.log("Пользователь не аутентифицирован");
+//    openLoginModal();
 
     // Отключаем обработчики для интерфейса, чтобы он не появлялся для неавторизованных пользователей
-    nodeGroup.selectAll("g").on("click", null);
-    svg.on("click", null);
+//   nodeGroup.selectAll("g").on("click", null);
+//svg.on("click", null);
+
+    // Убедитесь, что боковая панель скрыта
+//    document.getElementById("sidebar").style.display = "none";
   }
 });
 
