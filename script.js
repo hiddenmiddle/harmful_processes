@@ -3,9 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/fireba
 import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
-
-
-
 // Конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCJ6HnMh_rgtOXE-ShcPRXNWBmmc61gndA",
@@ -113,8 +110,10 @@ const nodeGroup = svg.append("g")
 
 const labelGroup = svg.append("g")
   .attr("class", "labels");
+
 // Предотвращение появления контекстного меню при правом клике
 svg.on("contextmenu", (event) => event.preventDefault());
+
 // Определение поведения масштабирования и панорамирования
 const zoom = d3.zoom()
   .scaleExtent([0.5, 5]) // Минимальный и максимальный масштаб
@@ -185,6 +184,7 @@ loginButton.addEventListener('click', () => {
       console.error("Ошибка входа:", error);
     });
 });
+
 function logout() {
   signOut(auth).then(() => {
     console.log("Пользователь вышел из системы");
@@ -194,13 +194,13 @@ function logout() {
   });
 }
 window.logout = logout;
-// Отслеживание статуса аутентификации пользователя
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // Пользователь аутентифицирован
-    console.log("Пользователь аутентифицирован");
 
-    // Включаем обработчики для отображения интерфейса только для авторизованного пользователя
+// Глобальная переменная для отслеживания статуса аутентификации
+let isAuthenticated = false;
+
+// Функция для обновления обработчиков событий в зависимости от аутентификации
+function updateEventHandlers() {
+  if (isAuthenticated) {
     nodeGroup.selectAll("g")
       .on("click", (event, d) => {
         event.stopPropagation();
@@ -216,18 +216,26 @@ onAuthStateChanged(auth, (user) => {
         .classed("highlighted", false);
       document.getElementById("sidebar").style.display = "none";
     });
-
   } else {
-    // Пользователь не аутентифицирован
-//    console.log("Пользователь не аутентифицирован");
-//    openLoginModal();
+    nodeGroup.selectAll("g").on("click", null);
+    svg.on("click", null);
+  }
+}
 
-    // Отключаем обработчики для интерфейса, чтобы он не появлялся для неавторизованных пользователей
-//   nodeGroup.selectAll("g").on("click", null);
-//svg.on("click", null);
-
+// Отслеживание статуса аутентификации пользователя
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    isAuthenticated = true;
+    console.log("Пользователь аутентифицирован");
+    closeLogin();
+    updateEventHandlers();
+  } else {
+    isAuthenticated = false;
+    console.log("Пользователь не аутентифицирован");
+    openLoginModal();
+    updateEventHandlers();
     // Убедитесь, что боковая панель скрыта
-//    document.getElementById("sidebar").style.display = "none";
+    document.getElementById("sidebar").style.display = "none";
   }
 });
 
@@ -236,6 +244,7 @@ const simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(d => d.id).distance(250))
   .force("charge", d3.forceManyBody().strength(-700))
   .force("center", d3.forceCenter(width / 2, height / 2));
+
 // Получаем элементы слайдеров
 const linkDistanceSlider = document.getElementById("linkDistanceSlider");
 const chargeStrengthSlider = document.getElementById("chargeStrengthSlider");
@@ -276,27 +285,27 @@ function mouseOver(event, d) {
   tooltip.html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
     .style("left", (event.pageX + 10) + "px")
     .style("top", (event.pageY - 28) + "px");
-    // Находим все связанные узлы
-    const connectedNodes = new Set();
-    connectedNodes.add(d.id);
-    linkGroup.selectAll("line").each(l => {
-      if (l.source.id === d.id || l.target.id === d.id) {
-        connectedNodes.add(l.source.id);
-        connectedNodes.add(l.target.id);
-      }
-    });
 
-    // Затемняем все несвязанные узлы и связи
-    nodeGroup.selectAll("g")
-      .classed("dimmed", n => !connectedNodes.has(n.id));
-
-    linkGroup.selectAll("line")
-      .classed("dimmed", l => !(l.source.id === d.id || l.target.id === d.id));
-
-    labelGroup.selectAll("text")
-      .classed("dimmed", n => !connectedNodes.has(n.id));
-
+  // Находим все связанные узлы
+  const connectedNodes = new Set();
+  connectedNodes.add(d.id);
+  linkGroup.selectAll("line").each(l => {
+    if (l.source.id === d.id || l.target.id === d.id) {
+      connectedNodes.add(l.source.id);
+      connectedNodes.add(l.target.id);
     }
+  });
+
+  // Затемняем все несвязанные узлы и связи
+  nodeGroup.selectAll("g")
+    .classed("dimmed", n => !connectedNodes.has(n.id));
+
+  linkGroup.selectAll("line")
+    .classed("dimmed", l => !(l.source.id === d.id || l.target.id === d.id));
+
+  labelGroup.selectAll("text")
+    .classed("dimmed", n => !connectedNodes.has(n.id));
+}
 
 function mouseOut(event, d) {
   // Убираем подсветку узла
@@ -306,6 +315,7 @@ function mouseOut(event, d) {
   linkGroup.selectAll("line")
     .filter(l => l.source.id === d.id || l.target.id === d.id)
     .classed("highlighted", false);
+
   // Убираем затемнение со всех узлов и связей
   nodeGroup.selectAll("g").classed("dimmed", false);
   linkGroup.selectAll("line").classed("dimmed", false);
@@ -376,15 +386,7 @@ function renderGraph() {
       .on("drag", dragged)
       .on("end", dragended))
     .on("mouseover", mouseOver)
-    .on("mouseout", mouseOut)
-    nodeGroup.selectAll("g")
-    .on("click", (event, d) => {
-      event.stopPropagation(); // Остановить всплытие события
-      openNodeDetail(d.id); // Функция для отображения деталей узла
-
-      // Показать интерфейс
-      document.getElementById("sidebar").style.display = "block";
-    });
+    .on("mouseout", mouseOut);
 
   nodeEnter.append("circle")
     .attr("r", d => 10 + d.degree * 2) // Размер узла зависит от степени
@@ -426,6 +428,9 @@ function renderGraph() {
     .links(formattedLinks);
 
   simulation.alpha(1).restart();
+
+  // Обновление обработчиков событий в зависимости от аутентификации
+  updateEventHandlers();
 }
 
 // Функция обновления позиций при "тик"
@@ -776,20 +781,6 @@ function deleteLink(link) {
 
 // Загрузка данных при инициализации
 loadData();
-
-// Обработчик клика вне узлов для сброса выделений и скрытия тултипа
-svg.on("click", () => {
-  nodeGroup.selectAll("g")
-    .select("circle")
-    .classed("highlighted", false);
-
-  linkGroup.selectAll("line")
-    .classed("highlighted", false);
-
-  hideTooltip();
-  // Скрыть интерфейс (боковую панель)
-  document.getElementById("sidebar").style.display = "none";
-});
 
 // Функции для тултипа
 function hideTooltip() {
