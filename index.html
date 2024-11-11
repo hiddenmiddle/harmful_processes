@@ -154,22 +154,56 @@
     }
 #controls {
   position: absolute;
-  top: 10px; /* Отступ от верхнего края */
-  right: 10px; /* Отступ от правого края */
-  background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный фон */
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
   padding: 10px;
   border-radius: 5px;
-  z-index: 1000; /* Поверх других элементов */
+  z-index: 1000;
 }
 
 #controls label {
   display: block;
   margin-top: 5px;
+  color: #6E82E5; /* Синий цвет меток */
+  font-weight: bold;
 }
 
+/* Стиль для трека ползунка */
 #controls input[type="range"] {
+  -webkit-appearance: none; /* Убираем стандартный стиль */
+  appearance: none;
   width: 200px;
+  height: 8px;
+  background-color: #FDBFF3; /* Розовый цвет трека */
+  border-radius: 5px;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
+
+#controls input[type="range"]:hover {
+  opacity: 1;
+}
+
+/* Стиль для бегунка ползунка */
+#controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  background-color: #935AC8; /* Розовый бегунок */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#controls input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background-color: #935AC8; /* Розовый бегунок */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
 
     .edit-input {
       width: 100%;
@@ -275,7 +309,7 @@
   <label for="linkDistanceSlider">Длина связей:</label>
   <input type="range" id="linkDistanceSlider" min="50" max="500" value="250">
 
-  <label for="chargeStrengthSlider">Сила отталкивания:</label>
+  <label for="chargeStrengthSlider">Сила притяжения:</label>
   <input type="range" id="chargeStrengthSlider" min="-1500" max="0" value="-700">
 </div>
 
