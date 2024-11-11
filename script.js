@@ -232,7 +232,6 @@ onAuthStateChanged(auth, (user) => {
   } else {
     isAuthenticated = false;
     console.log("Пользователь не аутентифицирован");
-    openLoginModal();
     updateEventHandlers();
     // Убедитесь, что боковая панель скрыта
     document.getElementById("sidebar").style.display = "none";
