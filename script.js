@@ -116,7 +116,7 @@ svg.on("contextmenu", (event) => event.preventDefault());
 
 // Определение поведения масштабирования и панорамирования
 const zoom = d3.zoom()
-  .scaleExtent([0.5, 5]) // Минимальный и максимальный масштаб
+  .scaleExtent([0.1, 5]) // Минимальный и максимальный масштаб
   .on("zoom", zoomed)
   .filter(function(event) {
     // Разрешаем масштабирование двумя пальцами и колесом мыши
@@ -127,7 +127,7 @@ const zoom = d3.zoom()
 
 // Применение поведения масштабирования к SVG
 svg.call(zoom);
-
+svg.call(zoom.transform, d3.zoomIdentity.scale(0.5));
 // Функция обработки события масштабирования
 function zoomed(event) {
     // Применяем трансформацию к группам узлов, связей и меток
