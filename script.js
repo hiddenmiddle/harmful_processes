@@ -127,7 +127,7 @@ const zoom = d3.zoom()
 
 // Применение поведения масштабирования к SVG
 svg.call(zoom);
-svg.call(zoom.transform, d3.zoomIdentity.scale(0.5));
+svg.call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5));
 // Функция обработки события масштабирования
 function zoomed(event) {
     // Применяем трансформацию к группам узлов, связей и меток
