@@ -388,7 +388,7 @@ function renderGraph() {
     .on("mouseout", mouseOut);
 
   nodeEnter.append("circle")
-    .attr("r", d => 10 + d.degree * 2) // Размер узла зависит от степени
+    .attr("r", d => 5 + d.degree * 2) // Размер узла зависит от степени
     .attr("fill", "#FDBFF3")
     .attr("stroke", "#fff")
     .attr("stroke-width", 1.5);
@@ -396,7 +396,7 @@ function renderGraph() {
   // Объединение
   node.merge(nodeEnter)
     .select("circle")
-    .attr("r", d => 10 + d.degree * 2);
+    .attr("r", d => 5 + d.degree * 2);
 
   // Привязка данных для меток
   const labels = labelGroup.selectAll("text")
