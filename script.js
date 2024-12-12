@@ -267,8 +267,6 @@ const tooltip = d3.select("body").append("div")
   .attr("class", "tooltip")
   .style("opacity", 0);
 //new coordinates
-const x = event.touches ? event.touches[0].clientX : event.pageX;
-const y = event.touches ? event.touches[0].clientY : event.pageY;
 
 // Функции для событий мыши
 function mouseOver(event, d) {
@@ -285,8 +283,8 @@ function mouseOver(event, d) {
     .duration(200)
     .style("opacity", .9);
   tooltip.html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
-    .style("left", `${Math.min(x + 10, window.innerWidth - 310)}px`) //new version
-    .style("top", `${Math.min(y + 10, window.innerHeight - 50)}px`) //new version
+    .style("left", `${Math.min(event.pageX + 10, window.innerWidth - 310)}px`)
+    .style("top", `${Math.min(event.pageY + 10, window.innerHeight - 50)}px`) //new version
 
   // Находим все связанные узлы
   const connectedNodes = new Set();
