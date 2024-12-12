@@ -357,13 +357,13 @@ function renderGraph() {
   const linkEnter = link.enter().append("line")
     .attr("class", "link")
     .attr("stroke-width", 2)
-    .on("click", (event, d) => {
-      event.stopPropagation();
-      if (confirm(`Удалить связь: ${d.source} → ${d.target}?`)) {
-        const linkKey = `${d.source}-${d.target}`;
-        remove(ref(database, `links/${linkKey}`));
-      }
-    });
+ //   .on("click", (event, d) => {
+  //    event.stopPropagation();
+//      if (confirm(`Удалить связь: ${d.source} → ${d.target}?`)) {
+//        const linkKey = `${d.source}-${d.target}`;
+//        remove(ref(database, `links/${linkKey}`));
+//      }
+//    });
 
   // Объединение
   link.merge(linkEnter)
