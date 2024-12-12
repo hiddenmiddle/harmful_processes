@@ -282,8 +282,8 @@ function mouseOver(event, d) {
     .duration(200)
     .style("opacity", .9);
   tooltip.html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
-    .style("left", (event.pageX + 10) + "px")
-    .style("top", (event.pageY - 28) + "px");
+    .style("left", `${Math.min(event.pageX + 10, window.innerWidth - 310)}px`) //new version
+    .style("top", `${Math.min(event.pageY + 10, window.innerHeight - 50)}px`) //new version
 
   // Находим все связанные узлы
   const connectedNodes = new Set();
