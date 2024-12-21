@@ -3,6 +3,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/fireba
 import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
+function isMobileDevice() {
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 // Конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCJ6HnMh_rgtOXE-ShcPRXNWBmmc61gndA",
@@ -282,9 +285,23 @@ function mouseOver(event, d) {
   tooltip.transition()
     .duration(200)
     .style("opacity", .9);
-  tooltip.html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
-    .style("left", `${Math.min(event.pageX + 10, window.innerWidth - 310)}px`)
-    .style("top", `${Math.min(event.pageY + 10, window.innerHeight - 50)}px`) //new version
+  if (isMobileDevice()) {
+    // На мобильных устройствах тултип фиксированно внизу по центру
+    tooltip
+      .html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
+      .style("left", "50%")
+      .style("transform", "translateX(-50%)")
+      .style("bottom", "20px")
+      .style("top", "auto");
+  } else {
+    // На десктопе тултип следует мыши
+    tooltip
+      .html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
+      .style("left", `${Math.min(event.pageX + 10, window.innerWidth - 310)}px`)
+      .style("top", `${Math.min(event.pageY + 10, window.innerHeight - 50)}px`)
+      .style("transform", "none")
+      .style("bottom", "auto");
+  } //new version
 
   // Находим все связанные узлы
   const connectedNodes = new Set();
