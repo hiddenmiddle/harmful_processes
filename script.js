@@ -286,22 +286,25 @@ function mouseOver(event, d) {
     .duration(200)
     .style("opacity", .9);
   if (isMobileDevice()) {
-    // На мобильных устройствах тултип фиксированно внизу по центру
+    // На мобильных устройствах тултип фиксированно в центре
     tooltip
       .html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
+      .style("position", "fixed")  // Изменено на fixed
       .style("left", "50%")
-      .style("transform", "translateX(-50%)")
-      .style("bottom", "20px")
-      .style("top", "auto");
+      .style("top", "50%")        // Центрируем по вертикали
+      .style("transform", "translate(-50%, -50%)")  // Центрирование по обеим осям
+      .style("max-width", "80%")  // Ограничиваем ширину
+      .style("background-color", "rgba(255, 255, 255, 0.95)")  // Делаем фон более заметным
+      .style("z-index", "1000");  // Убеждаемся, что тултип поверх всего
   } else {
-    // На десктопе тултип следует мыши
+    // На десктопе тултип следует за мышью
     tooltip
       .html(`<strong>${d.id}</strong><br/>${d.tooltip}`)
+      .style("position", "absolute")
       .style("left", `${Math.min(event.pageX + 10, window.innerWidth - 310)}px`)
       .style("top", `${Math.min(event.pageY + 10, window.innerHeight - 50)}px`)
-      .style("transform", "none")
-      .style("bottom", "auto");
-  } //new version
+      .style("transform", "none");
+  }
 
   // Находим все связанные узлы
   const connectedNodes = new Set();
